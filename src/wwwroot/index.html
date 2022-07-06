@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>15-Puzzle.js</title>
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                background-color: black;
+                width: 100%;
+            }
+
+            .tile-container {
+                position: relative;
+                border-radius: 5vw;
+                width: 90vw;
+                height: 90vw;
+                border: 2vw solid brown;
+                margin: 2vw;
+            }
+
+            .tile {
+                position: absolute;
+            }
+        </style>
+    </head>
+
+    <script>
+        var debounceTimeout = 100;
+        var tileContainer;
+        var tileWidth;
+
+        var tileImages = [
+            "images/Tile01.png",
+            "images/Tile02.png",
+            "images/Tile03.png",
+            "images/Tile04.png",
+            "images/Tile05.png",
+            "images/Tile06.png",
+            "images/Tile07.png",
+            "images/Tile08.png",
+            "images/Tile09.png",
+            "images/Tile10.png",
+            "images/Tile11.png",
+            "images/Tile12.png",
+            "images/Tile13.png",
+            "images/Tile14.png",
+            "images/Tile15.png"
+        ];
+        
+        class Tile
+        {
+            constructor(id)
+            {
+                this.id = id;
+            }
+        }
+
+        var nTiles = tileImages.length;
+        var size = Math.sqrt(nTiles + 1);
+
+        var grid = [];
+
+        function MoveTile(tileElement)
+        {
+            const tileId = tileElement.getAttribute("tileId");
+            const oldIndex = grid.findIndex(x=>x !== null && x.id == tileId);
+            const tile = grid[oldIndex];
+
+            for (let i = 0; i < 4; i++)
+            {
+                let n = GetNeighbourIndex(oldIndex, i);
+                if (n != -1 && grid[n] == null)
+                {
+                    grid[oldIndex] = null;
+                    grid[n] = tile;
+                    SetGridPos(n, tileElement);
+                    return;
+                }
+            }
+        }
+
+        // 0=North, 1=East, 2=South, 3=West
+        function GetNeighbourIndex(centre, direction)
+        {
+            let x = centre % size;
+            let y = Math.floor(centre / size);
+            switch (direction)
+            {
+                case 0:
+                    if (y < 1) return -1;
+                    y--;
+                    break;
+                case 1:
+                    if (x > size - 2) return -1;
+                    x++;
+                    break;
+                case 2:
+                if (y > size - 2) return -1;
+                    y++;
+                    break;
+                case 3:
+                    if (x < 1) return -1;
+                    x--;
+                    break;
+            }
+            return y * size + x;
+        }
+
+        function Randomise()
+        {
+            tileContainer.innerHtml = "";
+            grid = [];
+            for (let i = 0; i < nTiles; i++)
+            {
+                grid[i] = new Tile(i);
+                let element = document.createElement("img");
+                element.classList.add("tile");
+                element.src = tileImages[i];
+                element.style.width  = `${tileWidth}vw`;
+                element.style.height = `${tileWidth}vw`;
+                element.setAttribute("tileId", i);
+                element.onclick = x=>MoveTile(element);
+                SetGridPos(i, element);
+                tileContainer.appendChild (element);
+            }
+            grid[nTiles] = null;
+
+            // Perform a number of random moves:
+            for (let i = 0; i < 1000; i++)
+            {
+                let index = Math.floor(Math.random() * nTiles);
+                let element = tileContainer.children[index];
+                MoveTile(element);
+            }
+        }
+
+        function SetGridPos(index, tileElement)
+        {
+            let left = (index % size) * tileWidth;
+            let top  = Math.floor(index / size) * tileWidth;
+            tileElement.style.left = `${left}vw`;
+            tileElement.style.top = `${top}vw`;
+        }
+
+        window.onload = () =>
+        {
+            tileContainer = document.getElementById("tiles");
+            tileWidth = (100 - 10) / size;//tileContainer.clientWidth / size - 4;
+
+            Randomise();
+        }
+
+    </script>
+    
+    <body>
+        <div id="tiles" class="tile-container" />
+    </body>
+</html>
